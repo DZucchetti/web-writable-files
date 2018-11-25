@@ -1,7 +1,7 @@
 # web-writable-files
 
 An early draft propose an [API to allow web/browser based applications to access the file system](https://github.com/WICG/writable-files), for reading and writing files.
-The maintainer is seeking comments, especially related to the security model. Giving browser applications the ability to directly access, both in read and write, the file system has the potential to make the browser experience less secure.
+[The maintainer is seeking comments](https://discourse.wicg.io/t/writable-file-api/1433), especially related to the security model. Giving browser applications the ability to directly access, both in read and write, the file system has the potential to make the browser experience less secure.
 
 Browser based app are getting more powerful and this trend will become stronger with webassembly. It is therefore becoming a necessity for apps to have access to local files and directories, read and write content.
 
