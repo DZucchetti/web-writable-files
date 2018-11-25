@@ -14,10 +14,14 @@ When people are working on mobile applications the connection is not always reli
 The problem arises also on desktop applications that are constantly connected. A user is editing a text file from a local Dropbox directory. At the same time someone else is editing the same file. When the user is done editing and he push the save button. the file is completely overwritten. If the other user has already saved their work, all he has done get lost. 
 This situation is more and more becoming common, not just for multi-user concurrent working, but also with the same user working on different devices. 
 
-Allowing web apps to directly write file is therefore not a very suitable solution, for security reasons, but also for the fact that the "desktop-api" does not accommodate working on concurrent working offline. The API that allow webapps to access file locally should consider the new technology environment and be more similar to a "service-worker" than to a file system API as proposed in the draft. 
+Allowing web apps to directly write file is therefore not a suitable solution, for two main reasons:
+- Security problem. Giving apps direct file access to local files has to many couternindication and should be possible avoided. 
+- The "desktop-api" approach is outdated, it does not consider that files are mostly stored on cloud systems, that  many people may work on them concurrently and on devices that are not continously connected.   
 
-## Possible approach
-The research project has made us aware of the problem, but we never attempted to imagine a new API to save files. The publication of the API is the occasion to get a step further by trying to image an alternative way to approach the problem. 
+The API that allow webapps to access file locally should consider the new technology environment and be more similar to a "service-worker" than to a file system API as proposed in the draft. 
+
+## File-Service-Worker approach
+The research project has made us aware of the problems that app developers has to face in a new cloud based environment. New Web Apps are offering functionalities similar to desktop applications and should have direct access to file content. We understand that the old desktop-api approach is not valid, but until we become aware of the new writible-files API draft we never attempted to imagine a new API to save files. The publication of the API is the occasion to go deeper in the problem and formulate a very indication of a direction of further researches. 
 
 When editing documents or images locally it is wise for the software to create a temporary copy on the device. If the connection goes down or is not of good quality the application has continuous access to the data. Software should also provide a way to temporarily save the changes. If the app crash or it is closed, what have been done should be retrieved.  
 The easiest way to achieve that is by creating a local copy of the original file and use this. Changes are saved directly to the file. When the user push the "save/commit" button the changes are copied back and the original file is overwritten by the new copy.  
@@ -28,9 +32,9 @@ The File-Service-Worker should implementa and API that allow to:
 - retrieve content from any place
 - be notified of changes 
 - save the file back 
-- be notified of conflict
+- be notified of conflicts
 - see differences between version
-- resolve possible conflicts.  
+- resolve possible conflicts  
 
 The apps interact with a File-Service-Worker that makes available the file and take care to save the data back to the appropriate place and in case of concurrent changes delegate offer a chance to the app to solve the conflict or let the user decide what version of the file to keep. 
 
