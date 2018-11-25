@@ -61,5 +61,7 @@ Instead of a simple API to access a local file, a complete service should be mad
    - The system should offer the possibility to visualize differences between file versions. This will help the user decide how to handle conflict and be sure of what is happening to their files.
    
    
+## Comments
+We available for further information and welcome comments and feeback. 
 
 
