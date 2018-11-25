@@ -1,5 +1,6 @@
 # web-writable-files
 
+A [group led by Google and Mozilla](https://www.techrepublic.com/article/google-mozilla-working-on-letting-web-apps-edit-files-despite-warning-it-could-be-abused-in-terrible/) is working to make it easy to edit files using browser-based web apps but wants advice on how to guard against the "major" security and privacy risks.
 An early draft propose an [API to allow web/browser based applications to access the file system](https://github.com/WICG/writable-files), for reading and writing files.
 [The maintainer is seeking comments](https://discourse.wicg.io/t/writable-file-api/1433), especially related to the security model. Giving browser applications the ability to directly access, both in read and write, the file system has the potential to make the browser experience less secure.
 
