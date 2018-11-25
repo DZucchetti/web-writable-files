@@ -19,13 +19,23 @@ Allowing web apps to directly write file is therefore not a very suitable soluti
 ## Possible approach
 The research project has made us aware of the problem, but we never attempted to imagine a new API to save files. The publication of the API is the occasion to get a step further by trying to image an alternative way to approach the problem. 
 
-When editing documents or images locally it is wise for the software to create a temporary copy on the device. If the connection goes down or is not of good quality the application has continuous access to the data. Software should also provide a way to temporarily save the change. If the app crash or is closed the work should not get lost. 
-The easiest way to achieve that is by creating a copy of the original file and work on this. Changes are saved directly to the file. When the user "save/commit" changes the original file should be overwritten with the new one. 
-Due to the fact that the original file may reside on the cloud and someone else could have changed it. The app, prior to replace the original, if the content has been changed. In this case it should provide a way to merge the changes or else, in case that a merge cannot be performed, inform the user witch file to keep. 
+When editing documents or images locally it is wise for the software to create a temporary copy on the device. If the connection goes down or is not of good quality the application has continuous access to the data. Software should also provide a way to temporarily save the changes. If the app crash or it is closed, what have been done should be retrieved.  
+The easiest way to achieve that is by creating a local copy of the original file and use this. Changes are saved directly to the file. When the user push the "save/commit" button the changes are copied back and the original file is overwritten by the new copy.  
+Due to the fact that the original file may reside on the cloud, in the meantime someone else could have changed it. If the original content has been changed, the app, should be able to to know and takes appropiate steps. It should provide a way to merge the changes or else, in case that a merge cannot be performed, inform the user witch file version to keep. 
 
-Each application that allows to work offline should provide this functionality. But a better solution, also for security reason, would be to have the system offer this functionality. The apps interact with a File-Service-Worker that makes available the file and take care to save the data back to the appropriate place and in case of concurrent changes delegate offer a chance to the app to solve the conflict or let the user decide what version of the file to keep. 
-A possible workflow could be this:  
+Each application that allows to work offline should provide this functionality. But a better solution, also for security reason, would be to have the operating system or the web browser act as a "file-service-worker". 
+The File-Service-Worker should implementa and API that allow to: 
+- retrieve content from any place
+- be notified of changes 
+- save the file back 
+- be notified of conflict
+- see differences between version
+- resolve possible conflicts.  
 
+The apps interact with a File-Service-Worker that makes available the file and take care to save the data back to the appropriate place and in case of concurrent changes delegate offer a chance to the app to solve the conflict or let the user decide what version of the file to keep. 
+
+Instead of a simple API to access a local file, a complete service should be made available:  
+- The File-Service-Worker should be provided by the browser or by the operating system.
 - The webapp should not have direct access to the file.
 - The same API should allow to access any kind of resource (local file, network file, Dropbox file) 
 - When the App request access to a file, the API create a local copy in the user space. 
@@ -34,14 +44,17 @@ A possible workflow could be this:
 - It should be possible to specify an updating policy. The system will save the file back to the original position, based on the specific choice:
   - when the user commits the changes.
   - when a continuous automatic synchronization has been specified. 
-- The system will not allow to overwrite the original file, if it has been changed. 
-- It is up to the app to solve the conflict. The process should the same as in a document database. 
-  - The app read a new version of the file.  
-  - Try to do an automatic merge or it ask the user what is appropriate to do. 
+- Like in a modern document database, When saving a file back the hash of the orginal file should be provided.
+- The system will only overwrite the original file with the new file if the hash of the original file  version is the same. 
+- It is up to the app to solve the conflict. 
+  - The app read the new version of the file.  
+  - It then can tries to do an automatic merge or it ask the user what is appropriate to do. 
 - The system that takes care of making available the file locally and save back to the original position, should also be responsible to implement the security policies. 
    - It should offer a cockpit to manage/automate changes. 
    - Security policy may be dependent to the system and other elements, like the app or the web site that is attempting to save the changes.
    - User should be able to decide if and when direct updating of the original file is allowed.
-   - The system should offer the possibility to visualize differences between file versions. This will help the user decide how to handle conflict and be sure of what is happening to their files.   
+   - The system should offer the possibility to visualize differences between file versions. This will help the user decide how to handle conflict and be sure of what is happening to their files.
+   
+   
 
 
