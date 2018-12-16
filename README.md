@@ -2,69 +2,82 @@
 
 A [group led by Google and Mozilla](https://www.techrepublic.com/article/google-mozilla-working-on-letting-web-apps-edit-files-despite-warning-it-could-be-abused-in-terrible/) is working to make it easy to edit files using browser-based web apps but wants advice on how to guard against the "major" security and privacy risks.
 An early draft propose an [API to allow web/browser based applications to access the file system](https://github.com/WICG/writable-files), for reading and writing files.
-[The maintainer is seeking comments](https://discourse.wicg.io/t/writable-file-api/1433), especially related to the security model. Giving browser applications the ability to directly access, both in read and write, the file system has the potential to make the browser experience less secure.
+[The maintainer is seeking comments](https://discourse.wicg.io/t/writable-file-api/1433), especially related to use cases. 
 
-Browser based app are getting more powerful and this trend will become stronger with webassembly. It is therefore becoming a necessity for apps to have access to local files and directories, read and write content.
+## Offline Mobile Apps
+Our company, [banana.ch](https://www.banana.ch/) has an ongoing research project  with a SUPSI, a local university, that is aimed at allowing accessing and modifying accounting files on mobile devices that are not connected to the internet. 
+The use case is where the accounting file is read from the cloud, it is modified on the mobile device and it is the put back on the cloud. The difficulty that arise with this workflow is the one of more devices working on the same file at the same time.
+With the typical read and write API only the one last version of the file is kept. The device that write the file overwrite the last version. The aim of our research project is to integrate the different changes in the file. During the project we have also defined a modern use case, that we think it may be interesting to consider in the context of the draft API for accessing file. 
 
-We have currently at [banana.ch](https://www.banana.ch/) an internal research project, together with a SUPSI, a local university, that is aimed at allowing concurrently accessing and modifying accounting files in off line mode. People using their mobile device should be able to do change to the accounting file even if they are not connected to the internet. When they connect again the changes should be automatically synchronized. In the meantime, someone else may have made changes, so there is a necessity to merge changes and resolve conflicts. 
-The work has made us aware that the traditional, desktop way, to programmatically access files is not suited for mobile applications that change files. The same reasoning apply to browser based apps. Therefore, I will elaborate on that and comment the proposed API.
+Mobile devices are becoming more powerful. The difference between Desktop Application and Phone Application is disappearing. Everything that a personal computer can do, can also be done with a phone app. At Banana.ch we have ported the whole QT based, accounting software, to Android and IOS. We are still adapting the interface, but basically all the accounting functionalities available on Desktop are there also on the phone or tablet. Delegating all the major task to the mobile device makes a lot of sense and that why Hedge Computing is becoming important. The displacement of the computation from the cloud to the mobile device is also made easier with Webassembly. Existing desktop application can be easily ported to the browser.
 
-## offline web app
-When people are working on mobile applications the connection is not always reliable. If you are editing a file and you lose the connection for the fact that the train is entering a tunnel, you should be able to continue working. Modern apps are encouraged to use a [Service Workers](https://developers.google.com/web/fundamentals/primers/service-workers/) to cache data locally. When the connection is lost, the user can continue working. When the connection resumes the changes are automatically synchronized.
+Fitting a software on a phone requires changes, but the interface problem is not the only one that need to take care of. On mobile devices you cannot rely on the fact that the connection is available and is of a good quality. Connections are improving, but there will always place where it goes down. People want to continue using their apps independently of the fact that the connections is available or not. 
 
-The problem arises also on desktop applications that are constantly connected. A user is editing a text file from a local Dropbox directory. At the same time someone else is editing the same file. When the user is done editing and he push the save button. the file is completely overwritten. If the other user has already saved their work, all he has done get lost. 
-This situation is more and more becoming common, not just for multi-user concurrent working, but also with the same user working on different devices. 
+New apps are developed using a new approach called [Service Workers](https://developers.google.com/web/fundamentals/primers/service-workers/). Applications create a Service worker that is responsible of making the data available of the application and synchronizing with the cloud. The Service Worker take care of caching data locally. The application will continue to work even if there is no connection. Data can be changed and once the connection resume, the Service Worker take care of synchronizing local and cloud data. The Service Worker is a standard that is already supported by most browser.
 
-Allowing web apps to directly write file is therefore not a suitable solution, for two main reasons:
-- Security problem. Giving apps direct file access to local files has to many couternindication and should be possible avoided. 
-- The "desktop-api" approach is outdated, it does not consider that files are mostly stored on cloud systems, that  many people may work on them concurrently and on devices that are not continously connected.   
+Editing a file locally is very similar to the Service Worker approach:
+- Data (the file) is read from the cloud. 
+- The file content is stored locally (usually on the RAM or in a temporary file). It is therefore possible to works with no connection.
+- The App modify the content.
+- When the work is saved, the file is put back on the cloud. 
 
-The API that allow webapps to access file locally should consider the new technology environment and be more similar to a "service-worker" than to a file system API as proposed in the draft. 
+In the meantime, the file could have been already changed by another application or by another users. All what has been done get lost. 
+This is also a security threat that should be considered. The Apps that receive the right to access the file in read and writing mode, should be prevented to overwrite a file that has been changed. In a security saving approach, the writing access should be limited to same file version. **The API draft should be completed in order to prevent overwriting a file already modified**.
 
-## File-Service-Worker approach
-The research project has made us aware of the problems that app developers have to face in a new cloud based environment. New Web Apps are offering functionalities similar to desktop applications and should have direct access to file content. But the new collaborative environment require to rething the workflow. 
-We understand that the old desktop-api approach is not valid, but until we become aware of the new writible-files API draft we never attempted to imagine a new API to save files. The publication of the API is the occasion to go deeper in the problem and formulate a very indication of a direction of further researches. 
-
-Here following we suggest a new direction, that we call "File-Service-Worker" approach. A Service-Worker specific for Files and directories with a standard API that is made available by the browser or better by the operating system himself.
-
-When editing documents or images locally it is wise for the software to create a temporary copy on the device. If the connection goes down or is not of good quality the application has continuous access to the data. Software should also provide a way to temporarily save the changes. If the app crash or it is closed, what have been done should be retrieved.  
-The easiest way to achieve that is by creating a local copy of the original file and use this. Changes are saved directly to the file. When the user push the "save/commit" button the changes are copied back and the original file is overwritten by the new copy.  
-Due to the fact that the original file may reside on the cloud, in the meantime someone else could have changed it. If the original content has been changed, the app, should be able to to know and takes appropiate steps. It should provide a way to merge the changes or else, in case that a merge cannot be performed, inform the user witch file version to keep. 
-
-Each application that allows to work offline should provide this functionality. But a better solution, also for security reason, would be to have the operating system or the web browser act as a "file-service-worker". 
-The File-Service-Worker should implementa and API that allow to: 
-- retrieve content from any place
-- be notified of changes 
-- save the file back 
-- be notified of conflicts
-- see differences between version
-- resolve possible conflicts  
-
-The apps interact with a File-Service-Worker that makes available the file and take care to save the data back to the appropriate place and in case of concurrent changes delegate offer a chance to the app to solve the conflict or let the user decide what version of the file to keep. 
-
-Instead of a simple API to access a local file, a complete service should be made available:  
-- The File-Service-Worker should be provided by the browser or by the operating system.
-- The webapp should not have direct access to the file.
-- The same API should allow to access any kind of resource (local file, network file, Dropbox file) 
-- When the App request access to a file, the API create a local copy in the user space. 
-- The app can have full access to the file.
-- The file also serves as a place to store temporary changes.
-- It should be possible to specify an updating policy. The system will save the file back to the original position, based on the specific choice:
-  - when the user commits the changes.
-  - when a continuous automatic synchronization has been specified. 
-- Like in a modern document database, When saving a file back the hash of the orginal file should be provided.
-- The system will only overwrite the original file with the new file if the hash of the original file  version is the same. 
-- It is up to the app to solve the conflict. 
-  - The app read the new version of the file.  
-  - It then can tries to do an automatic merge or it ask the user what is appropriate to do. 
-- The system that takes care of making available the file locally and save back to the original position, should also be responsible to implement the security policies. 
-   - It should offer a cockpit to manage/automate changes. 
+## Workflow for editing files
+Prior to making available the read/write API in the browser we should ask if the traditional read/write file  approach is still the best one or we can find a workflow that is more suitable for the mobile world. The read/write file API assume that the file is local. On mobile device the file usually reside on the cloud (Dropbox) and is copied locally only for the purpose of modifying it, once done is copied back to the cloud. It would be better if the API interact directly with the service that make the file available the file locally and synch it back. While we are editing the file, another device, could have changed the file. When the device is back online and want to save it should notice that the file has already been changed and help handle the situation. 
+The workflow for editing a file on a mobile device, described here, is different than the one of a typical Desktop application: 
+- The application or the user decide what resource it should have access. 
+  - The resource can be a file or a directory content. 
+  - The resource could be a local saved one, a network saved one or a cloud saved. 
+- In order to edit the resource a local copy is needed. 
+  - The API should provide a function to create a local copy on the temporary local user space. 
+  - The application will access the local copy.
+- The API should allow read/write access to the local copy.
+  - The application can read and write the file as necessary. 
+  - This allows the Apps to save changes to the local device.
+  - In case the App is closed and reopened (the mobile device has been shut down) the work can resume from where it was. 
+- The API should make available a commit functions.
+  - The local file is copied back to the original place.
+  - In case the original file has been changed specific conflict resolution procedure should be started.
+- The API should provide an API for conflict resolution.
+  There can be two cases:
+  - Delegating the conflict resolution to the APP (like in document database).
+    - The app prior to writing a file should read the changed file. 
+	- The write request should be made with the prior version number.
+  - Taking care of the merge.
+    - It should offer a cockpit to manage/automate changes. 
    - Security policy may be dependent to the system and other elements, like the app or the web site that is attempting to save the changes.
    - User should be able to decide if and when direct updating of the original file is allowed.
    - The system should offer the possibility to visualize differences between file versions. This will help the user decide how to handle conflict and be sure of what is happening to their files.
-   
-   
+	
+## API for File-Service-Worker
+We thing that the traditional file read/write API is not the best solution. 
+We invite browsers or operating system to implement a Service Worker that is specific for accessing files:
+The File-Service-Worker should implement an API that allow to: 
+- retrieve content from any place
+- maintain a local copy
+- save the file back 
+- be notified of conflicts
+- solve possible conflicts  
+
+## Security considerations
+Allowing direct access to files within the browser pose a series of security risks. Next to the one that have been highlighted in the proposal, we think that the write of a changed file, should be considered also as a security risk. When the app receive access to a file, it should not be prevented to overwrite it if the file has been changed. 
+
+It is not the aim of this document to focus on the security, but it evident that the  File-Service-Worker API concept allows to handle security a lot better than the proposed API. 
+- The API will interact with the operating system and with the file provider that make cloud files available locally. 
+- Files changes are written first locally in a confined user space. Browser would only access files in the user space and not all the computer. There are less risks that a bug in a browser could affect the computer security. 
+- Virus checks are simpler if the files are first saved to a local user space.
+- The only application that is allowed to makes changes is the file provider:  
+  - File providers will take care of making the file available and write it back.
+  - File provider will decide what access policies they will implement based on their needs.
+  - Operating system should provide a local file provider for accessing file that are local to the device. The access policies of the device should apply.
+	- Access policies to Dropbox/ICloud/Github/WebDav or other services will be managed by the specific file provider. 
+- Apps are prevented to overwrite files that have been changed by someone else. 
+
 ## Comments
-We available for further information and welcome comments and feeback. 
+We available for further information and welcome comments and feedback. 
+
+
 
 
